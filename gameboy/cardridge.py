@@ -29,33 +29,42 @@ class Cardridge:
         return ''.join(map(chr, self.data[offset.TITLE])).rstrip('\0')
 
     @property
+    def mbc_type(self) -> str:
+        """Cartridge Type."""
+        return {
+            0x00: 'ROMO',
+            0x01: 'MBC1',
+            0x05: 'MBC2',
+            0x11: 'MBC3',
+            0x19: 'MBC5',
+        }.get(self.data[offset.TYPE])
+
+    @property
     def rom_size(self) -> int:
         """ROM Size."""
-        val = f'0x{self.data[offset.ROM_SIZE]:02x}'
         return {
-            '0x00': 32 * 1024,
-            '0x01': 64 * 1024,
-            '0x02': 128 * 1024,
-            '0x03': 256 * 1024,
-            '0x04': 512 * 1024,
-            '0x05': 1024 * 1024,
-            '0x06': 2048 * 1024,
-            '0x07': 4096 * 1024,
-            '0x52': 1024 * 1024 + 128 * 1024,
-            '0x53': 1024 * 1024 + 256 * 1024,
-            '0x54': 1024 * 1024 + 512 * 1024,
-        }.get(val)
+            0x00: 32 * 1024,
+            0x01: 64 * 1024,
+            0x02: 128 * 1024,
+            0x03: 256 * 1024,
+            0x04: 512 * 1024,
+            0x05: 1024 * 1024,
+            0x06: 2048 * 1024,
+            0x07: 4096 * 1024,
+            0x52: 1024 * 1024 + 128 * 1024,
+            0x53: 1024 * 1024 + 256 * 1024,
+            0x54: 1024 * 1024 + 512 * 1024,
+        }.get(self.data[offset.ROM_SIZE])
 
     @property
     def ram_size(self) -> int:
         """RAM Size."""
-        val = f'0x{self.data[offset.RAM_SIZE]:02x}'
         return {
-            '0x00': 0,
-            '0x01': 2 * 1024,
-            '0x02': 8 * 1024,
-            '0x03': 32 * 1024,
-        }.get(val)
+            0x00: 0,
+            0x01: 2 * 1024,
+            0x02: 8 * 1024,
+            0x03: 32 * 1024,
+        }.get(self.data[offset.RAM_SIZE])
 
     @property
     def header_checksum(self) -> int:

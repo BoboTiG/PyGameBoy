@@ -13,6 +13,7 @@ from .utils import Swap
 
 @pytest.mark.parametrize('attr, value', [
     ('title', 'SUPER MARIOLAND'),
+    ('mbc_type', 'MBC1'),
     ('rom_size', 64 * 1024),
     ('ram_size', 0),
     ('header_checksum', 157),
