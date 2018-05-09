@@ -1,5 +1,5 @@
-"""
-Game Boy emulator written from scratch in Python 3. Project code name: Sarita.
+"""Game Boy emulator written from scratch in Python 3.
+Project code name: Sarita.
 
 This project is authored by Mickaël Schoentgen <contact@tiger-222.fr>.
 
