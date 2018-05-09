@@ -10,8 +10,7 @@ __all__ = ('hexdump',)
 
 
 def grouper(iterable: Sequence, n: int, fillvalue: Any=None):
-    """"
-    Collect data into fixed-length chunks or blocks.
+    """"Collect data into fixed-length chunks or blocks.
         grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx
     """
     args = [iter(iterable)] * n
@@ -19,13 +18,12 @@ def grouper(iterable: Sequence, n: int, fillvalue: Any=None):
 
 
 def hexdump(data: bytes) -> str:
-    """ Display binary data like in a real hexeditor. """
-
-    r = []
-    for h in grouper(data, 16):
-        aa = []
-        for hh in h:
-            if hh is not None:
-                aa.append(f'{hh:02X}')
-        r.append(' '.join(aa))
-    return '\n'.join(r)
+    """Display binary data like in a real hexeditor."""
+    dump = []
+    for seq in grouper(data, 16):
+        subdump = []
+        for val in seq:
+            if val is not None:
+                subdump.append(f'{val:02X}')
+        dump.append(' '.join(subdump))
+    return '\n'.join(dump)

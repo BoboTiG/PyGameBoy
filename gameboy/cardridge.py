@@ -13,7 +13,9 @@ class Cardridge:
 
     def __init__(self, path: Path) -> None:
         with open(path, 'rb') as card:
-            self.data: bytes = card.read()
+            self.__data: bytes = card.read()
+
+        self.data: memoryview = memoryview(self.__data)
 
         if not self.validate():
             raise InvalidRom('Invalid header checksum')
@@ -23,10 +25,7 @@ class Cardridge:
 
     @property
     def title(self) -> str:
-        """Title of the game in UPPER CASE ASCII.
-        If it is less than 16 characters then the remaining bytes are
-        filled with 00's.
-        """
+        """Title of the game."""
         return ''.join(map(chr, self.data[offset.TITLE])).rstrip('\0')
 
     @property
@@ -60,12 +59,7 @@ class Cardridge:
 
     @property
     def header_checksum(self) -> int:
-        """Header Checksum.
-        Contains an checksum across the cartridge header bytes 0134-014C.
-        The lower 8 bits of the result must be the same than the value
-        in this entry.
-        The game _will not work _ if this checksum is incorrect.
-        """
+        """Header Checksum."""
         return int(self.data[offset.HEADER_CHECKSUM])
 
     def validate(self) -> bool:

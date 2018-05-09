@@ -7,7 +7,7 @@ You can always get the latest version of this module at:
     https://github.com/BoboTiG/PyGameBoy
 If that URL should fail, try contacting the author.
 """
-__version__ = '0.0.1-dev'
+__version__ = '0.0.1'
 __author__ = "Mickaël 'Tiger-222' Schoentgen"
 __copyright__ = """
 Copyright (c) 2018, Mickaël 'Tiger-222' Schoentgen
@@ -19,4 +19,3 @@ and that both that copyright notice and this permission notice appear
 in supporting documentation or portions thereof, including
 modifications, that you make.
 """
-__all__ = ()
