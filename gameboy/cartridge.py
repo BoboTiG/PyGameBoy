@@ -8,8 +8,8 @@ from . import offset
 from .exceptions import InvalidRom
 
 
-class Cardridge:
-    """Cardridge content."""
+class Cartridge:
+    """Cartridge content."""
 
     __slots__ = ('data', 'title', 'version')
 

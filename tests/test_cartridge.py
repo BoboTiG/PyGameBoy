@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from gameboy.cardridge import Cardridge
+from gameboy.cartridge import Cartridge
 from gameboy.exceptions import InvalidRom
 from .utils import Swap
 
@@ -15,19 +15,19 @@ from .utils import Swap
     ('title', 'Super Mario Land'),
     ('version', '1.1'),
 ])
-def test_attributes(attr, value, cardridge):
-    assert getattr(cardridge, attr) == value
+def test_attributes(attr, value, cartridge):
+    assert getattr(cartridge, attr) == value
 
 
-def test_repr(cardridge):
-    assert repr(cardridge)
+def test_repr(cartridge):
+    assert repr(cartridge)
 
 
-def test_validate(cardridge):
-    fake = cardridge.data[::4]
-    with Swap(cardridge, 'data', fake):
-        assert not cardridge.validate()
+def test_validate(cartridge):
+    fake = cartridge.data[::4]
+    with Swap(cartridge, 'data', fake):
+        assert not cartridge.validate()
 
     path = Path('tests/roms/invalid.gb')
     with pytest.raises(InvalidRom):
-        Cardridge(path)
+        Cartridge(path)
