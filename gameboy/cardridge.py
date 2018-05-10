@@ -3,6 +3,7 @@ Source: https://github.com/BoboTiG/PyGameBoy
 """
 
 from pathlib import Path
+from typing import Tuple
 
 from . import offset
 from .exceptions import InvalidRom
@@ -65,6 +66,11 @@ class Cardridge:
             0x02: 8 * 1024,
             0x03: 32 * 1024,
         }.get(self.data[offset.RAM_SIZE])
+
+    @property
+    def version(self) -> Tuple[int, int]:
+        """Header Checksum."""
+        return 1, int(self.data[offset.VERSION])
 
     @property
     def header_checksum(self) -> int:

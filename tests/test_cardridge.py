@@ -16,6 +16,7 @@ from .utils import Swap
     ('mbc_type', 'MBC1'),
     ('rom_size', 64 * 1024),
     ('ram_size', 0),
+    ('version', (1, 1)),
     ('header_checksum', 157),
 ])
 def test_attributes(attr, value, cardridge):
