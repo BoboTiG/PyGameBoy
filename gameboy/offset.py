@@ -20,29 +20,16 @@ DEST_CODE = 0x14A
 VERSION = 0x14C
 HEADER_CHECKSUM = 0x14D
 GLOBAL_CHECKSUM = slice(0x14E, 0x14F + 1)
-USER_PROG = slice(0x150, 0x7FFF + 1)
-
-# RAM
-RAM_LCD = slice(0x8000, 0x9FFF + 1)
-RAM_EXT = slice(0xA000, 0xBFFF + 1)
-RAM_WORK = slice(0xC000, 0xDFFF + 1)
-PROHIBITED = slice(0xE000, 0xFDFF + 1)
 
 # Memory
-FLAGS = slice(0xFF00, 0xFF7F + 1)
-RAM_CPU = slice(0xFF80, 0xFFFE + 1)
+VRAM = slice(0x8000, 0x9FFF + 1)  # Video RAM
+ERAM = slice(0xA000, 0xBFFF + 1)  # External RAM
+WRAM = slice(0xC000, 0xDFFF + 1)  # Work RAM
+OAM = slice(0xFE00, 0xFE9F + 1)   # Sprite attribute table
+HRAM = slice(0xFF80, 0xFFFE + 1)  # High RAM
 
-# Port/Mode registers
+# I/O ports
 P1, SB, SC, DIV, TIMA, TMA, TAC = range(0xFF00, 0xFF07)
 
-# Interrupt flags
-IF, IE = 0xFF0F, 0xFFFF
-
-# LCD registers
-LCDC, STAT, SCY, SCX, LY, LYC, DMA, BGP, OBP0, OBP1, WY, WX = range(0xFF40,
-                                                                    0xFF4C)
-OAM = slice(0xFE00, 0xFE9F + 1)
-
-# Sound registers
-NR = slice(0xFF10, 0xFF26 + 1)
-WAVEFORM = slice(0xFF30, 0xFF3F + 1)
+# Interrupt enable register
+IE = 0xFFFF
