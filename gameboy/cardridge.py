@@ -26,7 +26,7 @@ class Cardridge:
     @property
     def title(self) -> str:
         """Title of the game."""
-        return ''.join(map(chr, self.data[offset.TITLE])).rstrip('\0')
+        return ''.join(map(chr, self.data[offset.TITLE])).rstrip('\0').title()
 
     @property
     def mbc_type(self) -> str:
