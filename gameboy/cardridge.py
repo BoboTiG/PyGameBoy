@@ -3,7 +3,6 @@ Source: https://github.com/BoboTiG/PyGameBoy
 """
 
 from pathlib import Path
-from typing import Tuple
 
 from . import offset
 from .exceptions import InvalidRom
@@ -12,80 +11,24 @@ from .exceptions import InvalidRom
 class Cardridge:
     """Cardridge content."""
 
+    __slots__ = ('data', 'title', 'version')
+
     def __init__(self, path: Path) -> None:
         with open(path, 'rb') as card:
-            self.__data: bytes = card.read()
-
-        self.data: memoryview = memoryview(self.__data)
+            self.data: bytes = card.read()
 
         if not self.validate():
             raise InvalidRom('Invalid header checksum')
 
+        # Game properties
+        self.title: str = ' '.join((
+            self.data[offset.TITLE].decode().rstrip('\0'),
+            self.data[offset.CODE].decode().rstrip('\0'))).title()
+        self.version: str = f'1.{self.data[offset.VERSION]}'
+
     def __repr__(self) -> str:
-        return f'{type(self).__name__}<id={id(self)}, title={self.title!r}>'
-
-    @property
-    def game_title(self) -> str:
-        """Full title of the game."""
-        return f'{self.title} {self.code}'
-
-    @property
-    def title(self) -> str:
-        """Title of the game."""
-        return ''.join(map(chr, self.data[offset.TITLE])).rstrip('\0').title()
-
-    @property
-    def code(self) -> str:
-        """Game code."""
-        return ''.join(map(chr, self.data[offset.CODE])).rstrip('\0').title()
-
-    @property
-    def mbc_type(self) -> str:
-        """Cartridge Type."""
-        return {
-            0x00: 'ROMO',
-            0x01: 'MBC1',
-            0x05: 'MBC2',
-            0x11: 'MBC3',
-            0x19: 'MBC5',
-        }.get(self.data[offset.TYPE])
-
-    @property
-    def rom_size(self) -> int:
-        """ROM Size."""
-        return {
-            0x00: 32 * 1024,
-            0x01: 64 * 1024,
-            0x02: 128 * 1024,
-            0x03: 256 * 1024,
-            0x04: 512 * 1024,
-            0x05: 1024 * 1024,
-            0x06: 2048 * 1024,
-            0x07: 4096 * 1024,
-            0x52: 1024 * 1024 + 128 * 1024,
-            0x53: 1024 * 1024 + 256 * 1024,
-            0x54: 1024 * 1024 + 512 * 1024,
-        }.get(self.data[offset.ROM_SIZE])
-
-    @property
-    def ram_size(self) -> int:
-        """RAM Size."""
-        return {
-            0x00: 0,
-            0x01: 2 * 1024,
-            0x02: 8 * 1024,
-            0x03: 32 * 1024,
-        }.get(self.data[offset.RAM_SIZE])
-
-    @property
-    def version(self) -> Tuple[int, int]:
-        """ROM version."""
-        return 1, int(self.data[offset.VERSION])
-
-    @property
-    def header_checksum(self) -> int:
-        """Header Checksum."""
-        return int(self.data[offset.HEADER_CHECKSUM])
+        return (f'{type(self).__name__}<id=0x{id(self)}, title={self.title!r}'
+                f', version={self.version!r}>')
 
     def validate(self) -> bool:
         """Verify the header validity."""
@@ -93,4 +36,4 @@ class Cardridge:
         for value in self.data[0x134:0x14C + 1]:
             checksum = checksum - value - 1
         checksum &= 0xFF
-        return checksum == self.header_checksum
+        return checksum == self.data[offset.HEADER_CHECKSUM]

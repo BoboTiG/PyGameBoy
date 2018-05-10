@@ -12,14 +12,8 @@ from .utils import Swap
 
 
 @pytest.mark.parametrize('attr, value', [
-    ('title', 'Super Mario'),
-    ('code', 'Land'),
-    ('game_title', 'Super Mario Land'),
-    ('mbc_type', 'MBC1'),
-    ('rom_size', 64 * 1024),
-    ('ram_size', 0),
-    ('version', (1, 1)),
-    ('header_checksum', 157),
+    ('title', 'Super Mario Land'),
+    ('version', '1.1'),
 ])
 def test_attributes(attr, value, cardridge):
     assert getattr(cardridge, attr) == value
