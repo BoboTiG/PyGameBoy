@@ -25,9 +25,19 @@ class Cardridge:
         return f'{type(self).__name__}<id={id(self)}, title={self.title!r}>'
 
     @property
+    def game_title(self) -> str:
+        """Full title of the game."""
+        return f'{self.title} {self.code}'
+
+    @property
     def title(self) -> str:
         """Title of the game."""
         return ''.join(map(chr, self.data[offset.TITLE])).rstrip('\0').title()
+
+    @property
+    def code(self) -> str:
+        """Game code."""
+        return ''.join(map(chr, self.data[offset.CODE])).rstrip('\0').title()
 
     @property
     def mbc_type(self) -> str:
@@ -69,7 +79,7 @@ class Cardridge:
 
     @property
     def version(self) -> Tuple[int, int]:
-        """Header Checksum."""
+        """ROM version."""
         return 1, int(self.data[offset.VERSION])
 
     @property
@@ -80,7 +90,7 @@ class Cardridge:
     def validate(self) -> bool:
         """Verify the header validity."""
         checksum: int = 0
-        for i in self.data[0x134:0x14C + 1]:
-            checksum = checksum - i - 1
+        for value in self.data[0x134:0x14C + 1]:
+            checksum = checksum - value - 1
         checksum &= 0xFF
         return checksum == self.header_checksum
