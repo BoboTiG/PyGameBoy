@@ -29,5 +29,6 @@ def test_validate(cartridge):
         assert not cartridge.validate()
 
     path = Path('tests/roms/invalid.gb')
-    with pytest.raises(InvalidRom):
+    with pytest.raises(InvalidRom) as exc:
         Cartridge(path)
+    assert str(exc.value)

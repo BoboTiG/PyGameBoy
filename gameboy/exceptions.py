@@ -3,5 +3,15 @@ Source: https://github.com/BoboTiG/PyGameBoy
 """
 
 
-class InvalidRom(ValueError):
+class EmulationError(Exception):
+    """The emulation has encountered a fatal error."""
+
+
+class InvalidRom(EmulationError):
     """The ROM has an invalid header checksum."""
+
+    def __repr__(self):
+        return f'{type(self).__name__}: the ROM has invalid header checksum.'
+
+    def __str__(self):
+        return repr(self)
