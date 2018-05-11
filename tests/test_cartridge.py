@@ -3,12 +3,11 @@ Source: https://github.com/BoboTiG/PyGameBoy
 """
 
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 from gameboy.cartridge import Cartridge
 from gameboy.exceptions import InvalidRom
-
-from .utils import Swap
 
 
 @pytest.mark.parametrize(
@@ -27,7 +26,7 @@ def test_repr(cartridge):
 def test_validate(cartridge):
     """Test cartridge validation."""
     fake = cartridge.data[::4]
-    with Swap(cartridge, "data", fake):
+    with patch.object(cartridge, "data", fake):
         assert not cartridge.validate()
 
     path = Path("tests/roms/invalid.gb")

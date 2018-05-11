@@ -20,6 +20,7 @@ DEST_CODE = 0x14A
 VERSION = 0x14C
 HEADER_CHECKSUM = 0x14D
 GLOBAL_CHECKSUM = slice(0x14E, 0x14F + 1)
+USER_PROG = slice(0x150, 0x7FFF + 1)
 
 # Memory
 VRAM = slice(0x8000, 0x9FFF + 1)  # Video RAM
