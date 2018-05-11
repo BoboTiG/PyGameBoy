@@ -11,8 +11,6 @@ from .exceptions import InvalidRom
 class Cartridge:
     """Cartridge content."""
 
-    __slots__ = ('data', 'title', 'version')
-
     def __init__(self, path: Path) -> None:
         with open(path, 'rb') as card:
             self.data: bytes = card.read()
