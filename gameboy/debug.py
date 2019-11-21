@@ -6,14 +6,14 @@ from itertools import zip_longest
 from typing import Any, Sequence
 
 
-__all__ = ('hexdump',)
+__all__ = ("hexdump",)
 
 
-def grouper(iterable: Sequence, n: int, fillvalue: Any=None):
+def grouper(iterable: Sequence, count: int, fillvalue: Any = None):
     """"Collect data into fixed-length chunks or blocks.
         grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx
     """
-    args = [iter(iterable)] * n
+    args = [iter(iterable)] * count
     return zip_longest(*args, fillvalue=fillvalue)
 
 
@@ -24,6 +24,6 @@ def hexdump(data: bytes) -> str:
         subdump = []
         for val in seq:
             if val is not None:
-                subdump.append(f'{val:02X}')
-        dump.append(' '.join(subdump))
-    return '\n'.join(dump)
+                subdump.append(f"{val:02X}")
+        dump.append(" ".join(subdump))
+    return "\n".join(dump)

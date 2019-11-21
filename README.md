@@ -5,6 +5,16 @@ Project code name: Sarita.
 
 __Note__: this is a work in progress, the emulator does __not__ work as of now.
 
+## Hacking
+
+```bash
+python -m pip install -U --user pre-commit
+pre-commit install
+````
+
 ## Testing
 
-    python3 setup.py test
+```bash
+python -m pip install -U --user tox
+tox
+```
