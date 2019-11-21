@@ -1,0 +1,60 @@
+language: python
+cache: pip
+
+git:
+  depth: 1
+  quiet: true
+
+matrix:
+  fast_finish: true
+  include:
+
+    - name: Code quality checks
+      os: linux
+      python: "3.8"
+      dist: xenial
+      env: TOXENV=lint
+
+    - name: Types checking
+      os: linux
+      python: "3.8"
+      dist: xenial
+      env: TOXENV=types
+
+    #- name: Documentation build
+    #  os: linux
+    #  python: "3.8"
+    #  dist: xenial
+    #  env: TOXENV=docs
+
+    - name: "Python 3.8 on GNU/Linux"
+      os: linux
+      python: "3.8"
+      dist: xenial
+      env: TOXENV=py38
+
+    - name: "Python 3.7 on macOS"
+      os: osx
+      osx_image: xcode11.2
+      language: minimal
+      env: TOXENV=py37
+
+    - name: "Python 3.8 on Windows"
+      os: windows
+      language: shell
+      before_install:
+        - choco install python --version 3.8
+      env:
+        - PATH=/c/Python38:/c/Python38/Scripts:$PATH
+        - TOXENV=py38
+
+install:
+  - |
+    if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      python3 -m pip install --upgrade pip tox
+    else
+      python -m pip install --upgrade pip tox
+    fi
+
+script:
+  - tox
