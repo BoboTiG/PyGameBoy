@@ -25,7 +25,7 @@ GLOBAL_CHECKSUM = slice(0x14E, 0x14F + 1)
 VRAM = slice(0x8000, 0x9FFF + 1)  # Video RAM
 ERAM = slice(0xA000, 0xBFFF + 1)  # External RAM
 WRAM = slice(0xC000, 0xDFFF + 1)  # Work RAM
-OAM = slice(0xFE00, 0xFE9F + 1)   # Sprite attribute table
+OAM = slice(0xFE00, 0xFE9F + 1)  # Sprite attribute table
 HRAM = slice(0xFF80, 0xFFFE + 1)  # High RAM
 
 # I/O ports

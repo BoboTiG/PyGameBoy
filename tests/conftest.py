@@ -4,12 +4,12 @@ Source: https://github.com/BoboTiG/PyGameBoy
 
 from pathlib import Path
 
+import pytest
 from gameboy.cartridge import Cartridge
 
-import pytest
 
-
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def cartridge():
-    path = Path('tests/roms/Super Mario Land (JUE) (V1.1) [!].gb')
+    """A real ROM for our tests."""
+    path = Path("tests/roms/Super Mario Land (JUE) (V1.1) [!].gb")
     return Cartridge(path)
