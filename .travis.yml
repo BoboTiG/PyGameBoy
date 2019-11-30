@@ -33,11 +33,11 @@ matrix:
       dist: xenial
       env: TOXENV=py38
 
-    - name: "Python 3.7 on macOS"
-      os: osx
-      osx_image: xcode11.2
-      language: minimal
-      env: TOXENV=py37
+    #- name: "Python 3.8 on macOS"
+    #  os: osx
+    #  osx_image: xcode11.2  !! XXX Python 3.7
+    #  language: minimal
+    #  env: TOXENV=py38
 
     - name: "Python 3.8 on Windows"
       os: windows
