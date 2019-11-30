@@ -10,11 +10,61 @@ from gameboy.exceptions import InvalidRom, InvalidZip
 
 
 @pytest.mark.parametrize(
-    "attr, value", [("title", "Super Mario Land"), ("version", "1.1")]
+    "attr, value",
+    [
+        ("title", "SUPER MARIOLAND"),
+        ("version", 1.1),
+        ("cgb_flag", False),
+        ("publisher", "Nintendo"),
+        ("sgb_flag", False),
+        ("type", "MBC1"),
+        ("rom_size", "64KB"),
+        ("ram_size", "0KB"),
+        ("destination", "Japan"),
+        ("logo", True),
+        ("license", ""),
+        ("old_license", "01"),
+    ],
 )
 def test_attributes(attr, value, cartridge):
     """Test cartridge attributes."""
     assert getattr(cartridge, attr) == value
+
+
+def test_parse(cartridge):
+    """Test cartridge parse()."""
+    assert cartridge.parse() == {
+        "CGB flag": False,
+        "RAM size": "0KB",
+        "ROM size": "64KB",
+        "SGB flag": False,
+        "destination": "Japan",
+        "global checksum": False,
+        "header checksum": True,
+        "path": Path("tests/roms/Super Mario Land (JUE) (V1.1) [!].gb"),
+        "publisher": "Nintendo",
+        "title": "SUPER MARIOLAND",
+        "type": "MBC1",
+        "version": 1.1,
+    }
+
+
+def test_parse_error():
+    """Test a ROM with truncated headers.
+    To create the bad file:
+        $ cp "Super Mario Land (JUE) (V1.1) [!].gb" corrupted-headers.gb
+        $ truncate -s 334 corrupted-headers.gb
+    """
+    path = path = Path("tests/roms/corrupted-headers.gb")
+    with pytest.raises(InvalidRom):
+        Cartridge(path)
+
+
+def test_title_unicode():
+    """Test a ROM containing non-ascii letters in its title."""
+    path = Path("tests/roms/Pocket Monsters Yellow (J) (V1.0) (S)(T+Eng_BinHN).zip")
+    cartridge = Cartridge(path)
+    assert cartridge.title == "POKÉMON YELLOW"
 
 
 def test_repr(cartridge):
@@ -34,7 +84,7 @@ def test_zip():
     """Test the emulator can open a ZIP file containing a ROM."""
     path = Path("tests/roms/Super Mario Land (W) (V1.1).zip")
     cartridge = Cartridge(path)
-    assert "Super Mario Land" in repr(cartridge)
+    assert "SUPER MARIOLAND" in repr(cartridge)
 
 
 def test_zip_no_rom():
