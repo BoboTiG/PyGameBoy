@@ -3,11 +3,10 @@ Source: https://github.com/BoboTiG/PyGameBoy
 """
 
 from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 from gameboy.cartridge import Cartridge
-from gameboy.exceptions import InvalidRom
+from gameboy.exceptions import InvalidRom, InvalidZip
 
 
 @pytest.mark.parametrize(
@@ -23,13 +22,24 @@ def test_repr(cartridge):
     assert repr(cartridge)
 
 
-def test_validate(cartridge):
+def test_validate():
     """Test cartridge validation."""
-    fake = cartridge.data[::4]
-    with patch.object(cartridge, "data", fake):
-        assert not cartridge.validate()
-
     path = Path("tests/roms/invalid.gb")
     with pytest.raises(InvalidRom) as exc:
+        Cartridge(path)
+    assert str(exc.value)
+
+
+def test_zip():
+    """Test the emulator can open a ZIP file containing a ROM."""
+    path = Path("tests/roms/Super Mario Land (W) (V1.1).zip")
+    cartridge = Cartridge(path)
+    assert "Super Mario Land" in repr(cartridge)
+
+
+def test_zip_no_rom():
+    """Test a ZIP file containing no ROM."""
+    path = Path("tests/roms/README.md.zip")
+    with pytest.raises(InvalidZip) as exc:
         Cartridge(path)
     assert str(exc.value)
