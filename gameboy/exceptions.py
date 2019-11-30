@@ -10,8 +10,12 @@ class EmulationError(Exception):
 class InvalidRom(EmulationError):
     """The ROM has an invalid header checksum."""
 
+    def __init__(self, error: str):
+        self.error = error
+        super().__init__(error)
+
     def __repr__(self):
-        return f"{type(self).__name__}: the ROM has invalid header checksum."
+        return f"{type(self).__name__}: {self.error}."
 
     def __str__(self):
         return repr(self)

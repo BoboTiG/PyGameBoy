@@ -2,18 +2,17 @@
 Source: https://github.com/BoboTiG/PyGameBoy
 """
 
+from functools import cached_property, lru_cache
 from pathlib import Path
+from typing import Dict, Union
 from zipfile import ZipFile
 
-from . import offset
+from . import constants, offset
 from .exceptions import InvalidRom, InvalidZip
 
 
 class Cartridge:
     """Cartridge content."""
-
-    __title: str = ""
-    __version: str = ""
 
     def __init__(self, path: Path) -> None:
         self.path = path
@@ -31,39 +30,239 @@ class Cartridge:
             self.data = self.path.read_bytes()
 
         if not self.validate():
-            raise InvalidRom()
+            raise InvalidRom("the ROM has invalid header checksum")
+
+        try:
+            self.parse()
+        except Exception:
+            raise InvalidRom("ROM parsing error")
 
     def __repr__(self) -> str:
         return (
-            f"{type(self).__name__}<id=0x{id(self)}, title={self.title!r}"
+            f"{type(self).__name__}<id=0x{id(self)}"
+            f", title={self.title or self.path.name!r}"
             f", version={self.version!r}>"
         )
 
-    @property
+    @lru_cache(maxsize=1)
+    def parse(self) -> Dict[str, Union[bool, float, int, str, Path]]:
+        """Retrieve all ROM information."""
+        return {
+            "path": self.path,
+            "title": self.title,
+            "CGB flag": self.cgb_flag,
+            "publisher": self.publisher,
+            "SGB flag": self.sgb_flag,
+            "type": self.type,
+            "ROM size": self.rom_size,
+            "RAM size": self.ram_size,
+            "destination": self.destination,
+            "version": self.version,
+            "header checksum": self.header_checksum,
+            "global checksum": self.global_checksum,
+        }
+
+    @cached_property
+    def logo(self) -> bool:
+        """Nintendo Logo
+        These bytes define the bitmap of the Nintendo logo that is displayed when the
+        gameboy gets turned on. The hexdump of this bitmap is:
+          CE ED 66 66 CC 0D 00 0B 03 73 00 83 00 0C 00 0D
+          00 08 11 1F 88 89 00 0E DC CC 6E E6 DD DD D9 99
+          BB BB 67 63 6E 0E EC CC DD DC 99 9F BB B9 33 3E
+        The gameboys boot procedure verifies the content of this bitmap (after it has
+        displayed it), and LOCKS ITSELF UP if these bytes are incorrect. A CGB
+        verifies only the first 18h bytes of the bitmap, but others (for example a
+        pocket gameboy) verify all 30h bytes.
+        """
+        return self.data[offset.LOGO] == (
+            b"\xce\xedff\xcc\r\x00\x0b\x03s\x00\x83\x00\x0c\x00\r\x00\x08\x11\x1f"
+            b"\x88\x89\x00\x0e\xdc\xccn\xe6\xdd\xdd\xd9\x99\xbb\xbbgcn\x0e\xec\xcc"
+            b"\xdd\xdc\x99\x9f\xbb\xb93>"
+        )
+
+    @cached_property
     def title(self) -> str:
-        """Game title."""
+        """Title
+        Title of the game in UPPER CASE ASCII. If it is less than 16 characters then
+        the remaining bytes are filled with 00's. When inventing the CGB, Nintendo has
+        reduced the length of this area to 15 characters, and some months later they
+        had the fantastic idea to reduce it to 11 characters only. The new meaning of
+        the ex-title bytes is described below.
+        """
+        full_title = self.data[offset.TITLE].decode("latin-1").rstrip("\0").upper()
+        code = self.code
+        if code:
+            full_title += code
+        return full_title
 
-        if not self.__title:
-            self.__title = self.data[offset.TITLE].decode().rstrip("\0")
-            code = self.data[offset.CODE].decode().rstrip("\0")
-            if code:
-                self.__title += f" {code}"
-            self.__title = self.__title.title()
-        return self.__title
+    @cached_property
+    def code(self) -> str:
+        """Manufacturer Code
+        In older cartridges this area has been part of the Title (see above), in newer
+        cartridges this area contains an 4 character uppercase manufacturer code.
+        Purpose and Deeper Meaning unknown.
+        """
+        return self.data[offset.CODE].decode("latin-1").rstrip("\0").upper()
 
-    @property
-    def version(self) -> str:
-        """ROM version."""
+    @cached_property
+    def cgb_flag(self) -> bool:
+        """CGB Flag
+        In older cartridges this byte has been part of the Title (see above). In CGB
+        cartridges the upper bit is used to enable CGB functions. This is required,
+        otherwise the CGB switches itself into Non-CGB-Mode. Typical values are:
+          80h - Game supports CGB functions, but works on old gameboys also.
+          C0h - Game works on CGB only (physically the same as 80h).
+        Values with Bit 7 set, and either Bit 2 or 3 set, will switch the gameboy into
+        a special non-CGB-mode with uninitialized palettes. Purpose unknown,
+        eventually this has been supposed to be used to colorize monochrome games that
+        include fixed palette data at a special location in ROM.
+        """
+        return self.data[offset.CBG_FLAG] in (0x80, 0xC0)
 
-        if not self.__version:
-            self.__version = f"1.{self.data[offset.VERSION]}"
-        return self.__version
+    @cached_property
+    def license(self) -> str:
+        """New Licensee Code
+        Specifies a two character ASCII licensee code, indicating the company or
+        publisher of the game. These two bytes are used in newer games only (games
+        that have been released after the SGB has been invented). Older games are
+        using the header entry at 014B instead.
+        """
+        return self.data[offset.LICENSE].decode().rstrip("\0")
 
-    def validate(self) -> bool:
-        """Verify the header validity."""
+    @cached_property
+    def sgb_flag(self) -> bool:
+        """SGB Flag
+        Specifies whether the game supports SGB functions, common values are:
+          00h = No SGB functions (Normal Gameboy or CGB only game)
+          03h = Game supports SGB functions
+        The SGB disables its SGB functions if this byte is set to another value than
+        03h.
+        """
+        return self.data[offset.SBG_FLAG] == 0x03
 
-        checksum: int = 0
-        for value in self.data[offset.TITLE.start : offset.VERSION + 1]:
+    @cached_property
+    def type(self) -> str:
+        """Cartridge Type
+        Specifies which Memory Bank Controller (if any) is used in the cartridge, and
+        if further external hardware exists in the cartridge.
+          00h  ROM ONLY                 13h  MBC3+RAM+BATTERY
+          01h  MBC1                     15h  MBC4
+          02h  MBC1+RAM                 16h  MBC4+RAM
+          03h  MBC1+RAM+BATTERY         17h  MBC4+RAM+BATTERY
+          05h  MBC2                     19h  MBC5
+          06h  MBC2+BATTERY             1Ah  MBC5+RAM
+          08h  ROM+RAM                  1Bh  MBC5+RAM+BATTERY
+          09h  ROM+RAM+BATTERY          1Ch  MBC5+RUMBLE
+          0Bh  MMM01                    1Dh  MBC5+RUMBLE+RAM
+          0Ch  MMM01+RAM                1Eh  MBC5+RUMBLE+RAM+BATTERY
+          0Dh  MMM01+RAM+BATTERY        FCh  POCKET CAMERA
+          0Fh  MBC3+TIMER+BATTERY       FDh  BANDAI TAMA5
+          10h  MBC3+TIMER+RAM+BATTERY   FEh  HuC3
+          11h  MBC3                     FFh  HuC1+RAM+BATTERY
+          12h  MBC3+RAM
+        """
+        return constants.TYPES[self.data[offset.TYPE]]
+
+    @cached_property
+    def rom_size(self) -> str:
+        """ROM Size
+        Specifies the ROM Size of the cartridge. Typically calculated as "32KB shl N".
+          00h -  32KByte (no ROM banking)
+          01h -  64KByte (4 banks)
+          02h - 128KByte (8 banks)
+          03h - 256KByte (16 banks)
+          04h - 512KByte (32 banks)
+          05h -   1MByte (64 banks)  - only 63 banks used by MBC1
+          06h -   2MByte (128 banks) - only 125 banks used by MBC1
+          07h -   4MByte (256 banks)
+          52h - 1.1MByte (72 banks)
+          53h - 1.2MByte (80 banks)
+          54h - 1.5MByte (96 banks)
+        """
+        return constants.ROM_SIZES[self.data[offset.ROM_SIZE]]
+
+    @cached_property
+    def ram_size(self) -> str:
+        """RAM Size
+        Specifies the size of the external RAM in the cartridge (if any).
+          00h - None
+          01h - 2 KBytes
+          02h - 8 Kbytes
+          03h - 32 KBytes (4 banks of 8KBytes each)
+        When using a MBC2 chip 00h must be specified in this entry, even though the
+        MBC2 includes a built-in RAM of 512 x 4 bits.
+        """
+        return constants.RAM_SIZES[self.data[offset.RAM_SIZE]]
+
+    @cached_property
+    def destination(self) -> str:
+        """Destination Code
+        Specifies if this version of the game is supposed to be sold in japan, or
+        anywhere else. Only two values are defined.
+          00h - Japanese
+          01h - Non-Japanese
+        """
+        return "Japan" if self.data[offset.DEST_CODE] == 0x00 else "World"
+
+    @cached_property
+    def old_license(self) -> str:
+        """Old Licensee Code
+        Specifies the games company/publisher code in range 00-FFh. A value of 33h
+        signalizes that the New License Code in header bytes 0144-0145 is used
+        instead.
+        (Super GameBoy functions won't work if <> $33.)
+        """
+        value = self.data[offset.OLD_LICENSE]
+        if value == 0x33:
+            # The .license will be used by .publisher
+            return ""
+        return f"{value:02X}"
+
+    @cached_property
+    def version(self) -> float:
+        """Mask ROM Version number
+        Specifies the version number of the game. That is usually 00h.
+        """
+        return 1.0 + (self.data[offset.VERSION] / 10)
+
+    @cached_property
+    def header_checksum(self) -> bool:
+        """Header Checksum
+        Contains an 8 bit checksum across the cartridge header bytes 0134-014C. The
+        checksum is calculated as follows:
+          x=0:FOR i=0134h TO 014Ch:x=x-MEM[i]-1:NEXT
+        The lower 8 bits of the result must be the same than the value in this entry.
+        The GAME WON'T WORK if this checksum is incorrect.
+        """
+        checksum = 0
+        for value in self.data[offset.TITLE.start : offset.HEADER_CHECKSUM]:
             checksum = checksum - value - 1
         checksum &= 0xFF
         return checksum == self.data[offset.HEADER_CHECKSUM]
+
+    @cached_property
+    def global_checksum(self) -> bool:
+        """Global Checksum
+        Contains a 16 bit checksum (upper byte first) across the whole cartridge ROM.
+        Produced by adding all bytes of the cartridge (except for the two checksum
+        bytes). The Gameboy doesn't verify this checksum.
+        """
+        # NOT WORKING YET!
+        checksum = sum(
+            self.data[offset.ENTRY_POINT.start : offset.GLOBAL_CHECKSUM.start]
+        )
+        awaited = (self.data[offset.GLOBAL_CHECKSUM.start] << 8) | self.data[
+            offset.GLOBAL_CHECKSUM.stop
+        ]
+        return checksum == awaited
+
+    @cached_property
+    def publisher(self) -> str:
+        """Convenient propterty to get the ROM publisher."""
+        licensee = self.old_license or self.license
+        return constants.LICENSEES[licensee]
+
+    def validate(self) -> bool:
+        """Verify the header validity."""
+        return self.header_checksum is True
