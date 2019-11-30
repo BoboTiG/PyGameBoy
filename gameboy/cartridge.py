@@ -3,9 +3,10 @@ Source: https://github.com/BoboTiG/PyGameBoy
 """
 
 from pathlib import Path
+from zipfile import ZipFile
 
 from . import offset
-from .exceptions import InvalidRom
+from .exceptions import InvalidRom, InvalidZip
 
 
 class Cartridge:
@@ -15,7 +16,19 @@ class Cartridge:
     __version: str = ""
 
     def __init__(self, path: Path) -> None:
-        self.data = path.read_bytes()
+        self.path = path
+
+        # Handle ZIP files: the first .gb found is used
+        if self.path.suffix.lower() == ".zip":
+            with ZipFile(self.path) as zfile:
+                for file in zfile.namelist():
+                    if file.lower().endswith(".gb"):
+                        self.data = zfile.read(file)
+                        break
+                else:
+                    raise InvalidZip()
+        else:
+            self.data = self.path.read_bytes()
 
         if not self.validate():
             raise InvalidRom()

@@ -15,3 +15,13 @@ class InvalidRom(EmulationError):
 
     def __str__(self):
         return repr(self)
+
+
+class InvalidZip(EmulationError):
+    """The ZIP file contains no gameboy ROM."""
+
+    def __repr__(self):
+        return f"{type(self).__name__}: the ZIP file contains no gameboy ROM."
+
+    def __str__(self):
+        return repr(self)
