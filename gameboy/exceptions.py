@@ -7,7 +7,7 @@ class EmulationError(Exception):
     """The emulation has encountered a fatal error."""
 
 
-class InvalidRom(EmulationError):
+class InvalidRomError(EmulationError):
     """The ROM has an invalid header checksum."""
 
     def __init__(self, error: str):
@@ -21,7 +21,7 @@ class InvalidRom(EmulationError):
         return repr(self)
 
 
-class InvalidZip(EmulationError):
+class InvalidZipError(EmulationError):
     """The ZIP file contains no gameboy ROM."""
 
     def __repr__(self):

@@ -13,8 +13,7 @@ RST = slice(0x000, 0x100)
 # The memory at 0100-014F contains the cartridge header. This area contains
 # information about the program, its entry point, checksums, information about
 # the used MBC chip, the ROM and RAM sizes, etc. Most of the bytes in this area
-# are required to be specified correctly. For more information read the chapter
-# about The Cartridge Header.
+# are required to be specified correctly.
 
 # 0100-0103 - Entry Point
 # After displaying the Nintendo Logo, the built-in boot procedure jumps to this

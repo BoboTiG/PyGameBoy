@@ -4,66 +4,87 @@ Source: https://github.com/BoboTiG/PyGameBoy
 
 from functools import cached_property, lru_cache
 from pathlib import Path
-from typing import Dict, Union
+from types import SimpleNamespace
+from typing import Union
 from zipfile import ZipFile
 
 from . import constants, offset
-from .exceptions import InvalidRom, InvalidZip
+from .exceptions import InvalidRomError, InvalidZipError
+
+
+# The type of data that Cartridge.__init__() can handle as a "ROM"
+InputData = Union[Path, bytes, str]
 
 
 class Cartridge:
     """Cartridge content."""
 
-    def __init__(self, path: Path) -> None:
-        self.path = path
+    def __init__(self, rom: InputData) -> None:
+        """*rom* can be either bytes, a string or a path-like object."""
 
-        # Handle ZIP files: the first .gb found is used
-        if self.path.suffix.lower() == ".zip":
-            with ZipFile(self.path) as zfile:
-                for file in zfile.namelist():
-                    if file.lower().endswith(".gb"):
-                        self.data = zfile.read(file)
-                        break
-                else:
-                    raise InvalidZip()
+        if isinstance(rom, Path):
+            self.rom = rom
+        elif isinstance(rom, str):
+            self.rom = Path(rom)
         else:
-            self.data = self.path.read_bytes()
+            self.rom = Path(".")
 
-        if not self.validate():
-            raise InvalidRom("the ROM has invalid header checksum")
+        if isinstance(rom, bytes):
+            self.data = rom
+        else:
+            # Handle ZIP files: the first .gb found is used
+            if self.rom.suffix.lower() == ".zip":
+                with ZipFile(self.rom) as zfile:
+                    for file in zfile.namelist():
+                        if file.lower().endswith(".gb"):
+                            self.data = zfile.read(file)
+                            break
+                    else:
+                        raise InvalidZipError()
+            else:
+                self.data = self.rom.read_bytes()
 
-        try:
-            self.parse()
-        except Exception:
-            raise InvalidRom("ROM parsing error")
+        if len(self.data) < 0x14E or not self.is_valid():
+            raise InvalidRomError("the ROM has invalid headers")
 
     def __repr__(self) -> str:
         return (
-            f"{type(self).__name__}<id=0x{id(self)}"
-            f", title={self.title or self.path.name!r}"
-            f", version={self.version!r}>"
+            f"{type(self).__name__}<"
+            f"name={self.rom.name!r}"
+            f", title={self.title!r}"
+            f", version={self.version!r}"
+            f", destination={self.destination!r}"
+            f", publisher={self.publisher!r}"
+            f", is_valid={self.is_valid(complete=True)!r}"
+            ">"
         )
 
     @lru_cache(maxsize=1)
-    def parse(self) -> Dict[str, Union[bool, float, int, str, Path]]:
+    def parse(self) -> SimpleNamespace:
         """Retrieve all ROM information."""
-        return {
-            "path": self.path,
-            "title": self.title,
-            "CGB flag": self.cgb_flag,
-            "publisher": self.publisher,
-            "SGB flag": self.sgb_flag,
-            "type": self.type,
-            "ROM size": self.rom_size,
-            "RAM size": self.ram_size,
-            "destination": self.destination,
-            "version": self.version,
-            "header checksum": self.header_checksum,
-            "global checksum": self.global_checksum,
-        }
+        try:
+            return SimpleNamespace(
+                cgb=self.cgb_flag,
+                code=self.code,
+                destination=self.destination,
+                file=self.rom,
+                licensee=self.licensee,
+                old_licensee=self.old_licensee,
+                publisher=self.publisher,
+                ram_size=self.ram_size,
+                rom_size=self.rom_size,
+                sgb=self.sgb_flag,
+                title=self.title,
+                type=self.type,
+                valid=self.header_checksum,
+                valid_complete=self.global_checksum,
+                version=self.version,
+            )
+        except Exception:
+            raise InvalidRomError("ROM parsing error")
 
     @cached_property
-    def logo(self) -> bool:
+    def logo(self) -> bytes:
         """Nintendo Logo
         These bytes define the bitmap of the Nintendo logo that is displayed when the
         gameboy gets turned on. The hexdump of this bitmap is:
@@ -75,11 +96,7 @@ class Cartridge:
         verifies only the first 18h bytes of the bitmap, but others (for example a
         pocket gameboy) verify all 30h bytes.
         """
-        return self.data[offset.LOGO] == (
-            b"\xce\xedff\xcc\r\x00\x0b\x03s\x00\x83\x00\x0c\x00\r\x00\x08\x11\x1f"
-            b"\x88\x89\x00\x0e\xdc\xccn\xe6\xdd\xdd\xd9\x99\xbb\xbbgcn\x0e\xec\xcc"
-            b"\xdd\xdc\x99\x9f\xbb\xb93>"
-        )
+        return self.data[offset.LOGO]
 
     @cached_property
     def title(self) -> str:
@@ -90,7 +107,7 @@ class Cartridge:
         had the fantastic idea to reduce it to 11 characters only. The new meaning of
         the ex-title bytes is described below.
         """
-        full_title = self.data[offset.TITLE].decode("latin-1").rstrip("\0").upper()
+        full_title = self.data[offset.TITLE].decode("latin-1").rstrip("\0")
         code = self.code
         if code:
             full_title += code
@@ -103,7 +120,7 @@ class Cartridge:
         cartridges this area contains an 4 character uppercase manufacturer code.
         Purpose and Deeper Meaning unknown.
         """
-        return self.data[offset.CODE].decode("latin-1").rstrip("\0").upper()
+        return self.data[offset.CODE].decode("latin-1").rstrip("\0")
 
     @cached_property
     def cgb_flag(self) -> bool:
@@ -121,14 +138,14 @@ class Cartridge:
         return self.data[offset.CBG_FLAG] in (0x80, 0xC0)
 
     @cached_property
-    def license(self) -> str:
+    def licensee(self) -> str:
         """New Licensee Code
         Specifies a two character ASCII licensee code, indicating the company or
         publisher of the game. These two bytes are used in newer games only (games
         that have been released after the SGB has been invented). Older games are
         using the header entry at 014B instead.
         """
-        return self.data[offset.LICENSE].decode().rstrip("\0")
+        return self.data[offset.LICENSE].decode("latin-1").rstrip("\0")
 
     @cached_property
     def sgb_flag(self) -> bool:
@@ -206,7 +223,7 @@ class Cartridge:
         return "Japan" if self.data[offset.DEST_CODE] == 0x00 else "World"
 
     @cached_property
-    def old_license(self) -> str:
+    def old_licensee(self) -> str:
         """Old Licensee Code
         Specifies the games company/publisher code in range 00-FFh. A value of 33h
         signalizes that the New License Code in header bytes 0144-0145 is used
@@ -215,7 +232,7 @@ class Cartridge:
         """
         value = self.data[offset.OLD_LICENSE]
         if value == 0x33:
-            # The .license will be used by .publisher
+            # Then .licensee will be used by .publisher
             return ""
         return f"{value:02X}"
 
@@ -246,23 +263,24 @@ class Cartridge:
         """Global Checksum
         Contains a 16 bit checksum (upper byte first) across the whole cartridge ROM.
         Produced by adding all bytes of the cartridge (except for the two checksum
-        bytes). The Gameboy doesn't verify this checksum.
+        bytes) modulo 2**16 in big endian format. The Gameboy doesn't verify this checksum.
         """
-        # NOT WORKING YET!
-        checksum = sum(
-            self.data[offset.ENTRY_POINT.start : offset.GLOBAL_CHECKSUM.start]
-        )
-        awaited = (self.data[offset.GLOBAL_CHECKSUM.start] << 8) | self.data[
-            offset.GLOBAL_CHECKSUM.stop
-        ]
+        low, high = self.data[offset.GLOBAL_CHECKSUM]
+        awaited = (low << 8) | high
+        checksum = sum(self.data) - low - high
+        checksum %= 2 ** 16
         return checksum == awaited
 
     @cached_property
     def publisher(self) -> str:
-        """Convenient propterty to get the ROM publisher."""
-        licensee = self.old_license or self.license
+        """Convenient property to get the ROM publisher."""
+        licensee = self.old_licensee or self.licensee
         return constants.LICENSEES[licensee]
 
-    def validate(self) -> bool:
+    def is_valid(self, complete: bool = False) -> bool:
         """Verify the header validity."""
-        return self.header_checksum is True
+        if self.header_checksum is False:
+            return False
+        if complete:
+            return self.global_checksum is True
+        return True
