@@ -44,9 +44,6 @@ class Cartridge:
             else:
                 self.data = self.rom.read_bytes()
 
-        if len(self.data) < 0x14E or not self.is_valid():
-            raise InvalidRomError("the ROM has invalid headers")
-
     def __repr__(self) -> str:
         return (
             f"{type(self).__name__}<"
@@ -66,7 +63,6 @@ class Cartridge:
         try:
             return SimpleNamespace(
                 cgb=self.cgb_flag,
-                code=self.code,
                 destination=self.destination,
                 file=self.rom,
                 licensee=self.licensee,
@@ -280,8 +276,15 @@ class Cartridge:
 
     def is_valid(self, complete: bool = False) -> bool:
         """Verify the header validity."""
+        # No enough data
+        if len(self.data) < 0x14E:
+            return False
+
+        # Simple checksum, the only one really important for the GameBoy
         if self.header_checksum is False:
             return False
+
+        # A more complete check, not used by the GameBoy
         if complete:
             return self.global_checksum is True
         return True

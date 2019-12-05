@@ -48,7 +48,6 @@ def test_parse(cartridge):
     details = cartridge.parse()
     assert isinstance(details, SimpleNamespace)
     assert details.cgb is False
-    assert details.code == "LAND"
     assert details.destination == "Japan"
     assert details.file == cartridge.rom
     assert details.licensee == ""
@@ -98,9 +97,8 @@ def test_is_completely_valid(cartridge):
 def test_invalid_rom(roms):
     """Test cartridge validation with an invalid ROM."""
     rom = roms / "invalid.gb"
-    with pytest.raises(InvalidRomError) as exc:
-        Cartridge(rom)
-    assert "invalid headers" in str(exc.value)
+    cartridge = Cartridge(rom)
+    assert not cartridge.is_valid()
 
 
 def test_rom_with_licensee(roms):
