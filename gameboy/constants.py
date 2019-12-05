@@ -4,9 +4,11 @@ Source: https://github.com/BoboTiG/PyGameBoy
 
 # Sources:
 #   - https://gamefaqs.gamespot.com/gameboy/
+#   - https://gamefaqs.gamespot.com/gbc
 #   - https://gbdev.gg8.se/wiki/articles/Gameboy_ROM_Header_Info#Licensee
 #   - https://www.musee-des-jeux-video.com/fr/sys/17-game-boy/5/all
 LICENSEES = {
+    "": "Unknown",
     "00": "Unknown",
     "01": "Nintendo",
     "02": "Rocket Games",
@@ -30,6 +32,8 @@ LICENSEES = {
     "1F": "Virgin",
     "1G": "SMDE",
     "1H": "Yojigen",
+    "1M": "Micro Cabin",
+    "1N": "Dazz",
     "1P": "Creatures Inc.",
     "1Q": "TDK Deep Impresion",
     "20": "Destination Software",
@@ -46,6 +50,7 @@ LICENSEES = {
     "2L": "Tam",
     "2M": "Jordan",
     "2N": "Smilesoft",
+    "2P": "The Pokemon Company",
     "2Q": "Mediakite",
     "30": "Infogrames",
     "34": "Magifact",
@@ -96,6 +101,7 @@ LICENSEES = {
     "5Q": "LEGO Media",
     "5S": "Xicat Interactive",
     "5T": "Cryo Interactive",
+    "5V": "Agetec",
     "5W": "Red Storm Ent./BKN Ent.",
     "5X": "Microids",
     "5Z": "Conspiracy Entertainment Corp.",
@@ -116,6 +122,7 @@ LICENSEES = {
     "6M": "Studio 3",
     "6Q": "Classified Games",
     "6S": "TDK Mediactive",
+    "6T": "Interactive Imagination",
     "6U": "DreamCatcher",
     "6V": "JoWood Productions",
     "6W": "SEGA",
@@ -155,6 +162,7 @@ LICENSEES = {
     "8F": " I'Max",
     "8J": "General Entertainment",
     "8K": "Japan System Supply",
+    "8M": "CyberFront",
     "8N": "Success",
     "8P": "SEGA Japan",
     "91": "Chun Soft",
@@ -169,7 +177,9 @@ LICENSEES = {
     "9C": "Imagineer",
     "9F": "Nova",
     "9H": "Bottom Up",
+    "9K": "Activision",
     "9L": "Hasbro Japan",
+    "9M": "Natsume",
     "9N": "Marvelous Entertainment",
     "9P": "Keynet Inc.",
     "9Q": "Hands-On Entertainment",
@@ -187,6 +197,8 @@ LICENSEES = {
     "AH": "J-Wing",
     "AK": "KID",
     "AL": "MediaFactory",
+    "AM": "Biox",
+    "AN": "Lay-Up",
     "AP": "Infogrames Hudson",
     "AQ": "Kiratto. Ludic Inc",
     "B0": "Acclaim Japan",
@@ -203,6 +215,7 @@ LICENSEES = {
     "BG": "Magical",
     "BJ": "Compile",
     "BL": "MTO Inc.",
+    "BM": "Xing Entertainment",
     "BN": "Sunrise Interactive",
     "BP": "Global A Entertainment",
     "BQ": "Fuuki",
@@ -223,6 +236,7 @@ LICENSEES = {
     "CJ": "Boss Communications",
     "CK": "Axela",
     "CM": "Konami Computer Entertainment Osaka",
+    "CN": "NEC Interchannel",
     "CP": "Enterbrain",
     "D0": "Taito Corporation",
     "D1": "Sofel",
@@ -240,7 +254,9 @@ LICENSEES = {
     "DH": "Gaps Inc.",
     "DJ": "Epoch",
     "DK": "Kodansha",
+    "DL": "Digital Kids",
     "DN": "ELF",
+    "DP": "Prime System",
     "E0": "Jaleco Entertainment",
     "E1": "Towa Chiki",
     "E2": "Yutaka",
@@ -257,6 +273,8 @@ LICENSEES = {
     "EL": "Spike",
     "EM": "Konami Computer Entertainment Tokyo",
     "EN": "Alphadream Corporation",
+    "EP": "Sting",
+    "EQ": "Omega Micott",
     "F0": "A Wave",
     "F3": "Extreme Entertainment",
     "FB": "Rockstar North",
@@ -270,6 +288,8 @@ LICENSEES = {
     "GB": "Konami Computer Entertainment Japan",
     "GD": "Square-Enix",
     "HY": "Sachen",
+    "S5": "Ubisoft",
+    "@7": "Vast Fame Co. Ltd.",
 }
 
 RAM_SIZES = {
@@ -321,6 +341,7 @@ TYPES = {
     0x1C: "MBC5+RUMBLE",
     0x1D: "MBC5+RUMBLE+RAM",
     0x1E: "MBC5+RUMBLE+RAM+BATTERY",
+    0x22: "ROM+MBC7+BATT",
     0xFC: "POCKET CAMERA",
     0xFD: "BANDAI TAMA5",
     0xFE: "HuC3",
