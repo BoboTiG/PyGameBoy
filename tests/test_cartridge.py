@@ -63,10 +63,9 @@ def test_parse(cartridge):
     assert details.version == 1.1
 
 
-def test_parse_error(roms):
+def test_parse_error(mario):
     """Test a ROM with truncated headers."""
-    rom = roms / "Super Mario Land (JUE) (V1.1) [!].gb"
-    with rom.open("rb") as source:
+    with mario.open("rb") as source:
         # Read the minimum data required to pass the validation
         # but not enough for the parser to fully work
         data = source.read(GLOBAL_CHECKSUM.start)
@@ -109,9 +108,9 @@ def test_rom_with_licensee(roms):
     assert cartridge.publisher == "Nintendo"
 
 
-def test_rom_is_bytes(roms):
+def test_rom_is_bytes(mario):
     """Test the emulator can run with in-memory bytes."""
-    rom = (roms / "Super Mario Land (JUE) (V1.1) [!].gb").read_bytes()
+    rom = mario.read_bytes()
     cartridge = Cartridge(rom)
     assert "SUPER MARIOLAND" in repr(cartridge)
 

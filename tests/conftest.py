@@ -15,8 +15,14 @@ def roms():
 
 
 @pytest.fixture(scope="session")
-def cartridge(roms):
+def mario(roms):
+    """The GameBoy ROM file of Super Mario Land."""
+    # pylint: disable=redefined-outer-name
+    return roms / "Super Mario Land (JUE) (V1.1) [!].gb"
+
+
+@pytest.fixture(scope="session")
+def cartridge(mario):
     """A real ROM for our tests."""
     # pylint: disable=redefined-outer-name
-    rom = roms / "Super Mario Land (JUE) (V1.1) [!].gb"
-    return Cartridge(rom)
+    return Cartridge(mario)
