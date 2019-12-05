@@ -32,11 +32,11 @@ class Cartridge:
         if isinstance(rom, bytes):
             self.data = rom
         else:
-            # Handle ZIP files: the first .gb found is used
+            # Handle ZIP files: the first ROM file found is used
             if self.rom.suffix.lower() == ".zip":
                 with ZipFile(self.rom) as zfile:
                     for file in zfile.namelist():
-                        if file.lower().endswith(".gb"):
+                        if file.lower().endswith((".gb", ".gbc")):
                             self.data = zfile.read(file)
                             break
                     else:
@@ -55,7 +55,8 @@ class Cartridge:
             f", version={self.version!r}"
             f", destination={self.destination!r}"
             f", publisher={self.publisher!r}"
-            f", is_valid={self.is_valid(complete=True)!r}"
+            f", color={self.cgb_flag!r}"
+            f", valid={self.is_valid(complete=True)!r}"
             ">"
         )
 
