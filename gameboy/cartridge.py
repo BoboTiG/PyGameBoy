@@ -62,9 +62,9 @@ class Cartridge:
         """Retrieve all ROM information."""
         try:
             return SimpleNamespace(
+                file=self.rom,
                 cgb=self.cgb_flag,
                 destination=self.destination,
-                file=self.rom,
                 licensee=self.licensee,
                 old_licensee=self.old_licensee,
                 publisher=self.publisher,
@@ -276,15 +276,14 @@ class Cartridge:
 
     def is_valid(self, complete: bool = False) -> bool:
         """Verify the header validity."""
-        # No enough data
-        if len(self.data) < 0x14E:
-            return False
+        # Check for enough data
+        ret = len(self.data) >= 0x14E
 
-        # Simple checksum, the only one really important for the GameBoy
-        if self.header_checksum is False:
-            return False
+        # Simple header checksum, the only one really important for the GameBoy
+        ret &= self.header_checksum
 
         # A more complete check, not used by the GameBoy
         if complete:
-            return self.global_checksum is True
-        return True
+            ret &= self.global_checksum
+
+        return ret
