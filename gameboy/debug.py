@@ -21,9 +21,6 @@ def hexdump(data: bytes) -> str:
     """Display binary data like in a real hexeditor."""
     dump = []
     for seq in grouper(data, 16):
-        subdump = []
-        for val in seq:
-            if val is not None:
-                subdump.append(f"{val:02X}")
+        subdump = [f"{val:02X}" for val in seq if val is not None]
         dump.append(" ".join(subdump))
     return "\n".join(dump)
