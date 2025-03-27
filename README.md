@@ -2,7 +2,10 @@
 
 [![Build Status](https://travis-ci.org/BoboTiG/PyGameBoy.svg?branch=master)](https://travis-ci.org/BoboTiG/PyGameBoy)
 
-[![Patreon](https://img.shields.io/badge/Patreon-F96854?style=for-the-badge&logo=patreon&logoColor=white)](https://www.patreon.com/mschoentgen)
+> [!TIP]
+> Become **my boss** to help me work on this awesome software, and make the world better:
+> 
+> [![Patreon](https://img.shields.io/badge/Patreon-F96854?style=for-the-badge&logo=patreon&logoColor=white)](https://www.patreon.com/mschoentgen)
 
 Game Boy emulator written from scratch in Python 3.
 Code name: Sarita.
