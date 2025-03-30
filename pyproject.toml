@@ -127,7 +127,7 @@ line-ending = "auto"
 extend-select = ["ALL"]
 ignore = [
   "COM812",   # conflict
-  "D",        # Docuemtnation, I know what I do!
+  "D",        # Documentation, I know what I do!
   "PLR2004",  # Magic value used in comparison
   "T201",     # `print()`
 ]
