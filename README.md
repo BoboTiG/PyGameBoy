@@ -1,6 +1,6 @@
 # PyGameBoy
 
-[![Build Status](https://travis-ci.org/BoboTiG/PyGameBoy.svg?branch=master)](https://travis-ci.org/BoboTiG/PyGameBoy)
+[![Tests](https://github.com/BoboTiG/PyGameBoy/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/BoboTiG/PyGameBoy/actions/workflows/tests.yml)
 
 > [!TIP]
 > Become **my boss** to help me work on this awesome software, and make the world better:
