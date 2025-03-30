@@ -1,5 +1,5 @@
 """This is part of PyGameBoy, a Game Boy emulator written in Python 3.
-Source: https://github.com/BoboTiG/PyGameBoy.
+Source: https://github.com/BoboTiG/PyGameBoy
 """
 
 from functools import cached_property
@@ -169,7 +169,7 @@ class Cartridge:
           0Fh  MBC3+TIMER+BATTERY       FDh  BANDAI TAMA5
           10h  MBC3+TIMER+RAM+BATTERY   FEh  HuC3
           11h  MBC3                     FFh  HuC1+RAM+BATTERY
-          12h  MBC3+RAM.
+          12h  MBC3+RAM
         """
         return constants.TYPES[self.data[offset.TYPE]]
 
@@ -187,7 +187,7 @@ class Cartridge:
           07h -   4MByte (256 banks)
           52h - 1.1MByte (72 banks)
           53h - 1.2MByte (80 banks)
-          54h - 1.5MByte (96 banks).
+          54h - 1.5MByte (96 banks)
         """
         return constants.ROM_SIZES[self.data[offset.ROM_SIZE]]
 
@@ -210,7 +210,7 @@ class Cartridge:
         Specifies if this version of the game is supposed to be sold in japan, or
         anywhere else. Only two values are defined.
           00h - Japanese
-          01h - Non-Japanese.
+          01h - Non-Japanese
         """
         return "Japan" if self.data[offset.DEST_CODE] == 0x00 else "World"
 
@@ -220,7 +220,7 @@ class Cartridge:
         Specifies the games company/publisher code in range 00-FFh. A value of 33h
         signalizes that the New License Code in header bytes 0144-0145 is used
         instead.
-        (Super GameBoy functions won't work if <> $33.).
+        (Super GameBoy functions won't work if <> $33.)
         """
         # sourcery skip: assign-if-exp
         if (value := self.data[offset.OLD_LICENSE]) == 0x33:
