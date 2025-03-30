@@ -5,7 +5,7 @@ Source: https://github.com/BoboTiG/PyGameBoy
 from gameboy.debug import hexdump
 
 
-def test_hexdump():
+def test_hexdump() -> None:
     """Test a simple data dump."""
     data = (
         b"\xce\xedff\xcc\r\x00\x0b\x03s\x00\x83\x00\x0c\x00\r\x00\x08\x11"

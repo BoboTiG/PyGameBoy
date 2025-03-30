@@ -1,0 +1,140 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "gameboy"
+description = "Game Boy emulator written from scratch in Python 3."
+readme = "README.md"
+requires-python = ">= 3.10"
+authors = [
+  { name = "Mickaël Schoentgen", email="contact@tiger-222.fr" },
+]
+maintainers = [
+  { name = "Mickaël Schoentgen", email="contact@tiger-222.fr" },
+]
+license = { file = "LICENSE.txt" }
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Intended Audience :: End Users/Desktop",
+  "License :: OSI Approved :: MIT License",
+  "Natural Language :: English",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Games/Entertainment :: Arcade",
+]
+keywords = [
+  "emulation",
+  "emulator",
+  "gameboy",
+  "retro",
+  "video-game",
+]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://github.com/BoboTiG/PyGameBoy"
+Changelog = "https://github.com/BoboTiG/PyGameBoy/blob/main/CHANGELOG.md"
+Source = "https://github.com/BoboTiG/PyGameBoy"
+Sponsor = "https://github.com/sponsors/BoboTiG"
+Tracker = "https://github.com/BoboTiG/PyGameBoy/issues"
+"Released Versions" = "https://github.com/BoboTiG/PyGameBoy/releases"
+
+[project.optional-dependencies]
+dev = [
+  "build==1.2.2.post1",
+  "twine==6.1.0",
+]
+lint = [
+  "mypy==1.15.0",
+  "ruff==0.11.2",
+]
+tests = [
+  "pytest==8.3.5",
+  "pytest-cov==6.0.0",
+]
+
+[tool.hatch.version]
+path = "src/gameboy/__init__.py"
+
+[tool.hatch.build]
+skip-excluded-dirs = true
+
+[tool.hatch.build.targets.sdist]
+only-include = [
+  "CHANGELOG.md",
+  "src/gameboy",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = [
+  "src/gameboy",
+]
+
+[tool.mypy]
+# Ensure we know what we do
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_unused_configs = true
+
+# Imports management
+ignore_missing_imports = true
+follow_imports = "skip"
+
+# Ensure full coverage
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_calls = true
+
+# Restrict dynamic typing (a little)
+# e.g. `x: List[Any]` or x: List`
+disallow_any_generics = true
+
+strict_equality = true
+
+[tool.pytest.ini_options]
+pythonpath = "src"
+addopts = """
+  --cov-report=term-missing:skip-covered
+  --cov=gameboy
+  --showlocals
+  --strict-markers
+  -r fE
+  -vvv
+  src/tests
+"""
+
+[tool.ruff]
+line-length = 120
+indent-width = 4
+target-version = "py310"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.ruff.lint]
+extend-select = ["ALL"]
+ignore = [
+  "COM812",   # conflict
+  "D",        # Documentation, I know what I do!
+  "PLR2004",  # Magic value used in comparison
+  "T201",     # `print()`
+]
+fixable = ["ALL"]
+
+[tool.ruff.lint.per-file-ignores]
+"src/tests/*" = [
+  "FBT001",   # Boolean-typed positional argument in function definition
+  "S101",     # Use of `assert` detected
+]

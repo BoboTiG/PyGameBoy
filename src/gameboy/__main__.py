@@ -20,9 +20,7 @@ def supports_color() -> bool:
     Source: https://github.com/django/django/blob/master/django/core/management/color.py
     """
     plat = sys.platform
-    supported_platform = plat != "Pocket PC" and (
-        plat != "win32" or "ANSICON" in os.environ
-    )
+    supported_platform = plat != "Pocket PC" and (plat != "win32" or "ANSICON" in os.environ)
 
     # isatty() is not always implemented
     is_a_tty = hasattr(sys.stdout, "isatty") and sys.stdout.isatty()
@@ -39,7 +37,6 @@ MAGENTA = "\033[35m" if supports_color() else ""
 
 def check(rom: Path) -> int:
     """Check the ROM validity."""
-
     cartridge = Cartridge(rom)
     if not cartridge.is_valid(complete=True):
         print(f"[{RED}NG{NONE}]", rom.name)
@@ -50,7 +47,6 @@ def check(rom: Path) -> int:
 
 def dump(rom: Path) -> int:
     """Print ROM headers."""
-
     cartridge = Cartridge(rom)
     for header, value in cartridge.parse().__dict__.items():
         # Fancy colors!
@@ -67,31 +63,30 @@ def dump(rom: Path) -> int:
 
 def usage() -> int:
     """Print the usage."""
-
     print(f"Usage: pygameboy {GREEN}FILE{NONE} [{YELLOW}ACTION{NONE}]")
     print()
     print(f"Possible {YELLOW}ACTION{NONE}:")
     print(f"  {YELLOW}check{NONE}: check the ROM {GREEN}FILE{NONE} integrity.")
     print(f"  {YELLOW}dump{NONE} : print ROM {GREEN}FILE{NONE} headers.")
-    return 1
+    return -1
 
 
-def main(file: str = "", action: str = "") -> int:
-    """This is now we figth!"""
-
-    if not file:
-        return usage()
-
+def main(file: Path | str, action: str) -> int:
+    """Entry point."""
     # Resolve shell variables and ~
     rom = Path(expandvars(file)).expanduser()
 
-    if action == "check":
-        return check(rom)
-    if action == "dump":
-        return dump(rom)
+    match action:
+        case "check":
+            return check(rom)
+        case "dump":
+            return dump(rom)
+        case _:
+            msg = f"Invalid {action =}"
+            raise ValueError(msg)
 
-    return 0
 
-
-if __name__ == "__main__":  # pragma: no cover
+if __name__ == "__main__":  # pragma: nocover
+    if len(sys.argv) < 3:
+        sys.exit(usage())
     sys.exit(main(*sys.argv[1:]))
