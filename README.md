@@ -1,6 +1,7 @@
 # PyGameBoy
 
 [![Tests](https://github.com/BoboTiG/PyGameBoy/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/BoboTiG/PyGameBoy/actions/workflows/tests.yml)
+[![Github License](https://img.shields.io/github/license/BoboTiG/PyGameBoy.svg)](https://github.com/BoboTiG/PyGameBoy/blob/main/LICENSE.txt)
 
 > [!TIP]
 > Become **my boss** to help me work on this awesome software, and make the world better:
