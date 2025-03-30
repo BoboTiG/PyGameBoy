@@ -8,7 +8,7 @@
 > [![Patreon](https://img.shields.io/badge/Patreon-F96854?style=for-the-badge&logo=patreon&logoColor=white)](https://www.patreon.com/mschoentgen)
 
 Game Boy emulator written from scratch in Python 3.
-Code name: Sarita.
+Code name: *Sarita*.
 
 [FR] Article d'introduction : [PyGameBoy, un émulateur Game Boy écrit en Python](http://www.tiger-222.fr/?d=2018/04/29/20/55/29-pygameboy-un-emulateur-game-boy-ecrit-en-python)
 

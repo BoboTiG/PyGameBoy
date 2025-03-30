@@ -1,17 +1,19 @@
 """This is part of PyGameBoy, a Game Boy emulator written in Python 3.
-Source: https://github.com/BoboTiG/PyGameBoy
+Source: https://github.com/BoboTiG/PyGameBoy.
 """
 
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+
 from gameboy.cartridge import Cartridge
 from gameboy.exceptions import InvalidRomError, InvalidZipError
 from gameboy.offset import GLOBAL_CHECKSUM
 
 
 @pytest.mark.parametrize(
-    "attr, value",
+    ("attr", "value"),
     [
         ("title", "SUPER MARIOLAND"),
         ("code", "LAND"),
@@ -29,12 +31,12 @@ from gameboy.offset import GLOBAL_CHECKSUM
         ("publisher", "Nintendo"),
     ],
 )
-def test_attributes(attr, value, cartridge):
+def test_attributes(attr: str, value: bool, cartridge: Cartridge) -> None:
     """Test cartridge attributes."""
     assert getattr(cartridge, attr) == value
 
 
-def test_logo(cartridge):
+def test_logo(cartridge: Cartridge) -> None:
     """Test the Nintendo logo is well formatted."""
     assert cartridge.logo == (
         b"\xce\xedff\xcc\r\x00\x0b\x03s\x00\x83\x00\x0c\x00\r\x00\x08\x11\x1f"
@@ -43,7 +45,7 @@ def test_logo(cartridge):
     )
 
 
-def test_parse(cartridge):
+def test_parse(cartridge: Cartridge) -> None:
     """Test cartridge parse()."""
     details = cartridge.parse()
     assert isinstance(details, SimpleNamespace)
@@ -63,7 +65,7 @@ def test_parse(cartridge):
     assert details.version == 1.1
 
 
-def test_parse_error(mario):
+def test_parse_error(mario: Path) -> None:
     """Test a ROM with truncated headers."""
     with mario.open("rb") as source:
         # Read the minimum data required to pass the validation
@@ -76,31 +78,31 @@ def test_parse_error(mario):
     assert "parsing error" in str(exc.value)
 
 
-def test_title_unicode(roms):
+def test_title_unicode(roms: Path) -> None:
     """Test a ROM containing non-ascii letters in its title."""
     rom = roms / "Pocket Monsters Yellow (J) (V1.0) (S)(T+Eng_BinHN).zip"
     cartridge = Cartridge(rom)
     assert cartridge.title == "POKÉMON YELLOW"
 
 
-def test_repr(cartridge):
+def test_repr(cartridge: Cartridge) -> None:
     """Test cartridge repr()."""
     assert repr(cartridge)
 
 
-def test_is_completely_valid(cartridge):
+def test_is_completely_valid(cartridge: Cartridge) -> None:
     """Test cartridge validation."""
     assert cartridge.is_valid(complete=True)
 
 
-def test_invalid_rom(roms):
+def test_invalid_rom(roms: Path) -> None:
     """Test cartridge validation with an invalid ROM."""
     rom = roms / "invalid.gb"
     cartridge = Cartridge(rom)
     assert not cartridge.is_valid()
 
 
-def test_rom_with_licensee(roms):
+def test_rom_with_licensee(roms: Path) -> None:
     """Test a ROM with no old licensee but licensee."""
     rom = roms / "Gameboy Camera Gold - Zelda Edition (U) (S).zip"
     cartridge = Cartridge(rom)
@@ -108,28 +110,28 @@ def test_rom_with_licensee(roms):
     assert cartridge.publisher == "Nintendo"
 
 
-def test_rom_is_bytes(mario):
+def test_rom_is_bytes(mario: Path) -> None:
     """Test the emulator can run with in-memory bytes."""
     rom = mario.read_bytes()
     cartridge = Cartridge(rom)
     assert "SUPER MARIOLAND" in repr(cartridge)
 
 
-def test_rom_is_str(roms):
+def test_rom_is_str(roms: Path) -> None:
     """Test the emulator can open a ZIP file containing a ROM."""
     rom = str(roms / "Super Mario Land (W) (V1.1).zip")
     cartridge = Cartridge(rom)
     assert "SUPER MARIOLAND" in repr(cartridge)
 
 
-def test_rom_is_zip(roms):
+def test_rom_is_zip(roms: Path) -> None:
     """Test the emulator can open a ZIP file containing a ROM."""
     rom = roms / "Super Mario Land (W) (V1.1).zip"
     cartridge = Cartridge(rom)
     assert "SUPER MARIOLAND" in repr(cartridge)
 
 
-def test_rom_is_zip_but_contains_no_rom(roms):
+def test_rom_is_zip_but_contains_no_rom(roms: Path) -> None:
     """Test a ZIP file containing no ROM."""
     rom = roms / "README.md.zip"
     with pytest.raises(InvalidZipError) as exc:

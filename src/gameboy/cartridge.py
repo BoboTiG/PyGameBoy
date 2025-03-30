@@ -1,19 +1,17 @@
 """This is part of PyGameBoy, a Game Boy emulator written in Python 3.
-Source: https://github.com/BoboTiG/PyGameBoy
+Source: https://github.com/BoboTiG/PyGameBoy.
 """
 
-from functools import cached_property, lru_cache
+from functools import cached_property
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Union
 from zipfile import ZipFile
 
 from . import constants, offset
 from .exceptions import InvalidRomError, InvalidZipError
 
-
 # The type of data that Cartridge.__init__() can handle as a "ROM"
-InputData = Union[Path, bytes, str]
+InputData = Path | bytes | str
 
 
 class Cartridge:
@@ -21,28 +19,26 @@ class Cartridge:
 
     def __init__(self, rom: InputData) -> None:
         """*rom* can be either bytes, a string or a path-like object."""
-
         if isinstance(rom, Path):
             self.rom = rom
         elif isinstance(rom, str):
             self.rom = Path(rom)
         else:
-            self.rom = Path(".")
+            self.rom = Path()
 
         if isinstance(rom, bytes):
             self.data = rom
-        else:
+        elif self.rom.suffix.lower() == ".zip":
             # Handle ZIP files: the first ROM file found is used
-            if self.rom.suffix.lower() == ".zip":
-                with ZipFile(self.rom) as zfile:
-                    for file in zfile.namelist():
-                        if file.lower().endswith((".gb", ".gbc")):
-                            self.data = zfile.read(file)
-                            break
-                    else:
-                        raise InvalidZipError()
-            else:
-                self.data = self.rom.read_bytes()
+            with ZipFile(self.rom) as zfile:
+                for file in zfile.namelist():
+                    if file.lower().endswith((".gb", ".gbc")):
+                        self.data = zfile.read(file)
+                        break
+                else:
+                    raise InvalidZipError
+        else:
+            self.data = self.rom.read_bytes()
 
     def __repr__(self) -> str:
         return (
@@ -57,7 +53,6 @@ class Cartridge:
             ">"
         )
 
-    @lru_cache(maxsize=1)
     def parse(self) -> SimpleNamespace:
         """Retrieve all ROM information."""
         try:
@@ -77,8 +72,9 @@ class Cartridge:
                 valid_complete=self.global_checksum,
                 version=self.version,
             )
-        except Exception:
-            raise InvalidRomError("ROM parsing error")
+        except Exception as e:
+            msg = "ROM parsing error"
+            raise InvalidRomError(msg) from e
 
     @cached_property
     def logo(self) -> bytes:
@@ -105,8 +101,7 @@ class Cartridge:
         the ex-title bytes is described below.
         """
         full_title = self.data[offset.TITLE].decode("latin-1").rstrip("\0")
-        code = self.code
-        if code:
+        if code := self.code:
             full_title += code
         return full_title
 
@@ -132,7 +127,7 @@ class Cartridge:
         eventually this has been supposed to be used to colorize monochrome games that
         include fixed palette data at a special location in ROM.
         """
-        return self.data[offset.CBG_FLAG] in (0x80, 0xC0)
+        return self.data[offset.CBG_FLAG] in {0x80, 0xC0}
 
     @cached_property
     def licensee(self) -> str:
@@ -174,7 +169,7 @@ class Cartridge:
           0Fh  MBC3+TIMER+BATTERY       FDh  BANDAI TAMA5
           10h  MBC3+TIMER+RAM+BATTERY   FEh  HuC3
           11h  MBC3                     FFh  HuC1+RAM+BATTERY
-          12h  MBC3+RAM
+          12h  MBC3+RAM.
         """
         return constants.TYPES[self.data[offset.TYPE]]
 
@@ -192,7 +187,7 @@ class Cartridge:
           07h -   4MByte (256 banks)
           52h - 1.1MByte (72 banks)
           53h - 1.2MByte (80 banks)
-          54h - 1.5MByte (96 banks)
+          54h - 1.5MByte (96 banks).
         """
         return constants.ROM_SIZES[self.data[offset.ROM_SIZE]]
 
@@ -215,7 +210,7 @@ class Cartridge:
         Specifies if this version of the game is supposed to be sold in japan, or
         anywhere else. Only two values are defined.
           00h - Japanese
-          01h - Non-Japanese
+          01h - Non-Japanese.
         """
         return "Japan" if self.data[offset.DEST_CODE] == 0x00 else "World"
 
@@ -225,10 +220,10 @@ class Cartridge:
         Specifies the games company/publisher code in range 00-FFh. A value of 33h
         signalizes that the New License Code in header bytes 0144-0145 is used
         instead.
-        (Super GameBoy functions won't work if <> $33.)
+        (Super GameBoy functions won't work if <> $33.).
         """
-        value = self.data[offset.OLD_LICENSE]
-        if value == 0x33:
+        # sourcery skip: assign-if-exp
+        if (value := self.data[offset.OLD_LICENSE]) == 0x33:
             # Then .licensee will be used by .publisher
             return ""
         return f"{value:02X}"
@@ -265,16 +260,15 @@ class Cartridge:
         low, high = self.data[offset.GLOBAL_CHECKSUM]
         awaited = (low << 8) | high
         checksum = sum(self.data) - low - high
-        checksum %= 2 ** 16
+        checksum %= 2**16
         return checksum == awaited
 
     @cached_property
     def publisher(self) -> str:
         """Convenient property to get the ROM publisher."""
-        licensee = self.old_licensee or self.licensee
-        return constants.LICENSEES[licensee]
+        return constants.LICENSEES[self.old_licensee or self.licensee]
 
-    def is_valid(self, complete: bool = False) -> bool:
+    def is_valid(self, *, complete: bool = False) -> bool:
         """Verify the header validity."""
         # Check for enough data
         ret = len(self.data) >= 0x14E
