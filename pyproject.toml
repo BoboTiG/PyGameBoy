@@ -55,7 +55,7 @@ dev = [
 ]
 lint = [
   "mypy==2.1.0",
-  "ruff==0.15.15",
+  "ruff==0.15.20",
 ]
 tests = [
   "pytest==9.0.3",
