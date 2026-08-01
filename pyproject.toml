@@ -54,7 +54,7 @@ dev = [
   "twine==6.2.0",
 ]
 lint = [
-  "mypy==2.1.0",
+  "mypy==2.3.0",
   "ruff==0.15.20",
 ]
 tests = [
